@@ -18,9 +18,9 @@ except:
         json.dump(diagnosis, dump_file)
 
 uploader_name = upwh.uploader_name
-print('开始监视UP主的更新...')
+print('开始监视UP主<{}>的更新...'.format(uploader_name))
 print()
-os.system('osascript -e \'display notification \"开始监视UP主的更新...\" with title \"Bilibili UP主更新提醒\"\'')
+os.system('osascript -e \'display notification \"开始监视UP主<%s>的更新...\" with title \"Bilibili UP主更新提醒\"\'' % uploader_name)
 
 while True:
     new_dynamics = upwh.get_update()
@@ -48,10 +48,11 @@ while True:
                 with open('diagnosis.json', 'w') as dump_file:
                     json.dump(diagnosis, dump_file)
                     print('发现不能被识别的动态类型，请将"diagnosis.json"提交给开发者')
-            title = '<{}>发布了新的{}'.format(uploader_name, type_name)
+            title = '您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name)
+            print(title)
             if type_contains_title:
                 print('稿件标题：{}'.format(title))
             os.system('osascript -e \'display notification "%s" with title "%s"\'' % (content, title))
-            print('<{}>发布了新的{}'.format(uploader_name, type_name))
+            print('您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name))
             print('动态内容: {}'.format(content))
     time.sleep(60)

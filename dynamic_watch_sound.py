@@ -18,7 +18,7 @@ except:
         json.dump(diagnosis, dump_file)
 
 uploader_name = upwh.uploader_name
-print('开始监视UP主的更新...')
+print('开始监视UP主<{}>的更新...'.format(uploader_name))
 print()
 
 while True:
@@ -47,7 +47,7 @@ while True:
                 with open('diagnosis.json', 'w') as dump_file:
                     json.dump(diagnosis, dump_file)
                 print('发现不能被识别的动态类型，请将"diagnosis.json"提交给开发者')
-            print('<{}>发布了新的{}'.format(uploader_name, type_name))
+            print('您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name))
             print('动态内容: {}'.format(content))
             if type_contains_title:
                 print('稿件标题: {}'.format(title))
