@@ -1,9 +1,7 @@
 import json
 import time
 import updynamic
-from win10toast import ToastNotifier
-
-toaster = ToastNotifier()
+import os
 
 uid = int(input('UP主UID: '))
 
@@ -22,6 +20,7 @@ except:
 uploader_name = upwh.uploader_name
 print('开始监视UP主的更新...')
 print()
+os.system('osascript -e \'display notification \"开始监视UP主的更新...\" with title \"Bilibili UP主更新提醒\"\'')
 
 while True:
     new_dynamics = upwh.get_update()
@@ -48,11 +47,11 @@ while True:
                 diagnosis['diagnosis'].append(dynamic)
                 with open('diagnosis.json', 'w') as dump_file:
                     json.dump(diagnosis, dump_file)
-                print('发现不能被识别的动态类型，请将"diagnosis.json"提交给开发者')
+                    print('发现不能被识别的动态类型，请将"diagnosis.json"提交给开发者')
+            title = '<{}>发布了新的{}'.format(uploader_name, type_name)
+            if type_contains_title:
+                print('稿件标题：{}'.format(title))
+            os.system('osascript -e \'display notification "%s" with title "%s"\'' % (content, title))
             print('<{}>发布了新的{}'.format(uploader_name, type_name))
             print('动态内容: {}'.format(content))
-            if type_contains_title:
-                print('稿件标题: {}'.format(title))
-            print()
-            toaster.show_toast('<{}>发布了新的{}'.format(uploader_name, type_name), content)
     time.sleep(60)

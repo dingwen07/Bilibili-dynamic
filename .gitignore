@@ -120,6 +120,12 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Specific Files
+.DS_Store
+
+# Workspace
+.idea
+
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -132,3 +138,4 @@ uploader_data/*
 !uploader_data/README.txt
 diagnosis.json
 alert.mp3
+
