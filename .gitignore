@@ -131,3 +131,4 @@ dmypy.json
 uploader_data/*
 !uploader_data/README.txt
 diagnosis.json
+alert.mp3

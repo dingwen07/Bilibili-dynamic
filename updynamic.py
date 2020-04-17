@@ -7,7 +7,7 @@ class UploaderDynamic(object):
         super().__init__()
         self.uploader_uid = uploader_uid
         self.session = requests.Session()
-        self.uploader_data_file = './uploader_data/{}.json'.format(self.uploader_uid)
+        self.uploader_data_file = 'uploader_data/{}.json'.format(self.uploader_uid)
         try:
             with open(self.uploader_data_file, 'r') as load_file:
                 self.uploader_data = json.load(load_file)
