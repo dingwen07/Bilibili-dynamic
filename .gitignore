@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+uploader_data/*
+!uploader_data/README.txt
+diagnosis.json
