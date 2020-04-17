@@ -20,7 +20,7 @@ except:
 uploader_name = upwh.uploader_name
 print('开始监视UP主<{}>的更新...'.format(uploader_name))
 print()
-os.system('osascript -e \'display notification \"开始监视UP主<%s>的更新...\" with title \"Bilibili UP主更新提醒\"\'' % uploader_name)
+os.system('osascript -e \'display notification \"开始监视UP主<{}>的更新...\" with title \"Bilibili UP主更新提醒\"\''.format(uploader_name))
 
 while True:
     new_dynamics = upwh.get_update()
@@ -52,7 +52,6 @@ while True:
             print(title)
             if type_contains_title:
                 print('稿件标题：{}'.format(title))
-            os.system('osascript -e \'display notification "%s" with title "%s"\'' % (content, title))
-            print('您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name))
+            os.system('osascript -e \'display notification "{}" with title "{}"\''.format(content, title))
             print('动态内容: {}'.format(content))
     time.sleep(60)
