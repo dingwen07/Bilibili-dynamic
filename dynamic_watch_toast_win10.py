@@ -1,6 +1,9 @@
 import json
 import time
 import updynamic
+from win10toast import ToastNotifier
+
+toaster = ToastNotifier()
 
 uid = int(input('UP主UID: '))
 
@@ -51,4 +54,5 @@ while True:
             if type_contains_title:
                 print('稿件标题: {}'.format(title))
             print()
+            toaster.show_toast('"{}"发布了新的{}'.format(uploader_name, type_name),content)
     time.sleep(60)

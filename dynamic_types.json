@@ -1,0 +1,64 @@
+{
+    "types": {
+        "1": {
+            "name": "\u8f6c\u53d1",
+            "contains_title": false,
+            "path": [
+                "card",
+                "item",
+                "content"
+            ]
+        },
+        "2": {
+            "name": "\u56fe\u7247\u52a8\u6001",
+            "contains_title": false,
+            "path": [
+                "card",
+                "item",
+                "description"
+            ]
+        },
+        "4": {
+            "name": "\u6587\u5b57\u52a8\u6001",
+            "contains_title": false,
+            "path": [
+                "card",
+                "item",
+                "content"
+            ]
+        },
+        "8": {
+            "name": "\u89c6\u9891",
+            "contains_title": true,
+            "path": [
+                "card",
+                "dynamic"
+            ],
+            "title_path": [
+                "card",
+                "title"
+            ]
+        },
+        "16": {
+            "name": "\u89c6\u9891\u52a8\u6001",
+            "contains_title": false,
+            "path": [
+                "card",
+                "item",
+                "description"
+            ]
+        },
+        "64": {
+            "name": "\u4e13\u680f\u6587\u7ae0",
+            "contains_title": true,
+            "path": [
+                "card",
+                "dynamic"
+            ],
+            "title_path": [
+                "card",
+                "title"
+            ]
+        }
+    }
+}
