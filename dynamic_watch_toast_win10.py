@@ -20,9 +20,9 @@ except:
         json.dump(diagnosis, dump_file)
 
 uploader_name = upwh.uploader_name
-toaster.show_toast('Bilibili UP主更新提醒', '开始监视UP主<{}>的更新...'.format(uploader_name))
 print('开始监视UP主<{}>的更新...'.format(uploader_name))
 print()
+toaster.show_toast('Bilibili UP主更新提醒', '开始监视UP主<{}>的更新...'.format(uploader_name))
 
 while True:
     new_dynamics = upwh.get_update()
