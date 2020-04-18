@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 import os
 
 
@@ -32,6 +33,33 @@ class UploaderDynamic(object):
             self.fetch()
         self.uploader_name = self.uploader_data['info']['name']
 
+    def fetch(self):
+        counter = 0
+        dynamic_offset = 0
+        while True:
+            url = self.dynamic_url.format(str(dynamic_offset))
+            dynamic_response = self.session.get(url)
+            dynamic_history = json.loads(dynamic_response.content.decode())
+            if dynamic_history['code'] != 0:
+                time.sleep(1)
+                continue
+            dynamic_offset = dynamic_history['data']['next_offset']
+            if counter == 0:
+                if not 'cards' in dynamic_history['data']:
+                    self._save_data()
+                    return 0
+            for dynamic in dynamic_history['data']['cards']:
+                dynamic_id = dynamic['desc']['dynamic_id']
+                dynamic['card'] = json.loads(dynamic['card'])
+                dynamic['extend_json'] = json.loads(dynamic['extend_json'])
+                self.uploader_data['dynamics'][str(dynamic_id)] = dynamic
+                counter = counter + 1
+            if dynamic_offset == 0:
+                self._save_data()
+                return counter
+
+
+    '''
     def fetch(self, dynamic_offset = 0, counter = 0):
         url = self.dynamic_url.format(str(dynamic_offset))
         dynamic_response = self.session.get(url)
@@ -51,6 +79,7 @@ class UploaderDynamic(object):
             return counter
         else:
             return self.fetch(dynamic_history['data']['next_offset'], counter)
+    '''
 
     def get_update(self):
         dynamic_offset = 0
@@ -69,6 +98,27 @@ class UploaderDynamic(object):
             self._save_data()
         return new_dynamics
 
+    def get_all_dynamics(self):
+        dynamic_dict = {}
+        dynamic_offset = 0
+        while True:
+            url = self.dynamic_url.format(str(dynamic_offset))
+            dynamic_response = self.session.get(url)
+            dynamic_history = json.loads(dynamic_response.content.decode())
+            if dynamic_history['code'] != 0:
+                time.sleep(1)
+                continue
+            dynamic_offset = dynamic_history['data']['next_offset']
+            for dynamic in dynamic_history['data']['cards']:
+                dynamic_id = dynamic['desc']['dynamic_id']
+                dynamic['card'] = json.loads(dynamic['card'])
+                dynamic['extend_json'] = json.loads(dynamic['extend_json'])
+                dynamic_dict[str(dynamic_id)] = dynamic
+            if dynamic_history['data']['next_offset'] == 0:
+                return dynamic_dict
+
+
+    '''
     def get_all_dynamics(self, dynamic_dict = {}, dynamic_offset = 0):
         url = self.dynamic_url.format(str(dynamic_offset))
         dynamic_response = self.session.get(url)
@@ -82,6 +132,7 @@ class UploaderDynamic(object):
             return dynamic_dict
         else:
             return self.get_all_dynamics(dynamic_dict, dynamic_history['data']['next_offset'])
+    '''
 
     def get_deleted_dynamics(self):
         current_dynamics = self.get_all_dynamics()
