@@ -5,7 +5,23 @@ import os
 
 uid = int(input('UP主UID: '))
 
-upwh = updynamic.UploaderDynamic(uid)
+try:
+    upwh = updynamic.UploaderDynamic(uid)
+except ValueError:
+    print('该UP主不存在，请检查后再试！')
+    exit(1)
+
+
+while True:
+    tts_mode = input('是否开启语音提醒功能？(Y/N)')
+    if tts_mode.upper() == 'Y' or tts_mode.upper() == 'YES':
+        use_tts = True
+        break
+    elif tts_mode.upper() == 'N' or tts_mode.upper() == 'NO':
+        use_tts = False
+        break
+    else:
+        print('输入错误，请重新输入！')
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
@@ -18,9 +34,16 @@ except:
         json.dump(diagnosis, dump_file)
 
 uploader_name = upwh.uploader_name
+if use_tts:
+    os.system('osascript -e \'display dialog \"开始监视UP主<{}>的更新...\" with title \"Bilibili UP主更新提醒\" with icon note\''.format(
+        uploader_name))
+    os.system('osascript -e \'say "Bilibili UP主更新提醒"\'')
+    os.system('osascript -e \'say "开始监视UP主的更新"\'')
+else:
+    os.system('osascript -e \'display notification \"开始监视UP主<{}>的更新...\" with title \"Bilibili UP主更新提醒\" sound name \"Purr\"\''.format(
+        uploader_name))
 print('开始监视UP主<{}>的更新...'.format(uploader_name))
 print()
-os.system('osascript -e \'display notification \"开始监视UP主<{}>的更新...\" with title \"Bilibili UP主更新提醒\"\''.format(uploader_name))
 
 while True:
     new_dynamics = upwh.get_update()
@@ -50,8 +73,14 @@ while True:
                     print('发现不能被识别的动态类型，请将"diagnosis.json"提交给开发者')
             title = '您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name)
             print(title)
+            print('动态内容: {}'.format(content))
             if type_contains_title:
                 print('稿件标题：{}'.format(title))
-            os.system('osascript -e \'display notification "{}" with title "{}"\''.format(content, title))
-            print('动态内容: {}'.format(content))
-    time.sleep(60)
+            if use_tts:
+                os.system('osascript -e \'display notification "{}" with title "{}"\''.format(content, title))
+                os.system('osascript -e \'say "您关注的UP主发布了新的{}"\''.format(type_name))
+                os.system('osascript -e \'say "动态内容：{}"\''.format(content))
+            else:
+                os.system('osascript -e \'display notification "{}" with title "{}"\' sound name \"Purr\"'.format(content, title))
+
+    time.sleep(1)
