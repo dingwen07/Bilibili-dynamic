@@ -35,7 +35,7 @@ except:
 
 uploader_name = upwh.uploader_name
 if use_tts:
-    os.system('osascript -e \'display dialog \"开始监视UP主<{}>的更新...\" with title \"Bilibili UP主更新提醒\" with icon note\''.format(
+    os.system('osascript -e \'display notification \"开始监视UP主<{}>的更新...\" with title \"Bilibili UP主更新提醒\"\''.format(
         uploader_name))
     os.system('osascript -e \'say "Bilibili UP主更新提醒"\'')
     os.system('osascript -e \'say "开始监视UP主的更新"\'')
@@ -83,4 +83,4 @@ while True:
             else:
                 os.system('osascript -e \'display notification "{}" with title "{}"\' sound name \"Purr\"'.format(content, title))
 
-    time.sleep(1)
+    time.sleep(60)
