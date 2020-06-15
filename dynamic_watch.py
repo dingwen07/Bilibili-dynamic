@@ -27,6 +27,9 @@ while True:
             for dynamic in new_dynamics:
                 dynamic_id = dynamic['desc']['dynamic_id']
                 dynamic_type = str(dynamic['desc']['type'])
+                content = "未解析"
+                type_contains_title = False
+                title = ""
                 if dynamic_type in dynamic_types['types']:
                     type_data = dynamic_types['types'][dynamic_type]
                     type_name = type_data['name']
@@ -48,6 +51,7 @@ while True:
                         json.dump(diagnosis, dump_file)
                     print('发现不能被识别的动态类型，请将"diagnosis.json"提交给开发者')
                 print('您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name))
+                print('动态ID: {}'.format(dynamic_id))
                 print('动态内容: {}'.format(content))
                 if type_contains_title:
                     print('稿件标题: {}'.format(title))
@@ -55,5 +59,5 @@ while True:
     except Exception as e:
         print(e)
     finally:
-        time.sleep(10)
+        time.sleep(30)
 

@@ -125,6 +125,7 @@ venv.bak/
 
 # Workspace
 .idea
+.vscode
 
 # mypy
 .mypy_cache/
