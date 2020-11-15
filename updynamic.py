@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import time
+import os
 
 import requests
 
@@ -11,6 +12,8 @@ class UploaderDynamic(object):
         self.uploader_uid = uploader_uid
         self.dynamic_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={}&offset_dynamic_id={}&need_top=1'.format(str(self.uploader_uid), '{}')
         self.session = requests.Session()
+        if not os.path.exists(database_file):
+            UploaderDynamic.init_db(database_file)
         self.db = sqlite3.connect(database_file)
         self.db_cursor = self.db.cursor()
         uploader_data = self.db_cursor.execute('''SELECT "uid", "name", "data" FROM "main"."uploader_info" WHERE "uid" = ?;''', (uploader_uid,)).fetchall()
@@ -116,6 +119,9 @@ class UploaderDynamic(object):
         self._save_data()
         return counter
 
+    def close(self):
+        self.db.close()
+
     def _save_data(self):
         self.db.commit()
 
@@ -137,6 +143,19 @@ class UploaderDynamic(object):
                                 PRIMARY KEY("id"),
                                 FOREIGN KEY("uid") REFERENCES "uploader_info"("uid")
                                 );''')
+        db.commit()
+        db.close()
+
+    @staticmethod
+    def get_dynamic(dynamic_id, database_file='dynamic_data.db'):
+        """
+        docstring
+        """
+        db = sqlite3.connect(database_file)
+        db_cursor = db.cursor()
+        select = db_cursor.execute('''SELECT "id", "status" FROM "main"."dynamics" WHERE "id" = ?;''', (dynamic_id,)).fetchall()[0]
+        db.close()
+        return select
 
     @staticmethod
     def migrate(uploader_uid, database_file='dynamic_data.db'):
@@ -165,3 +184,4 @@ class UploaderDynamic(object):
             if len(select) == 0:
                 db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "status", "data") VALUES (?, ?, ?, ?);''', (dynamic_id, uploader_uid, 0, json.dumps(dynamic)))
         db.commit()
+        db.close()
