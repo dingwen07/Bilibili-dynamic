@@ -51,14 +51,15 @@ class UploaderDynamic(object):
                 if not 'cards' in dynamic_history['data']:
                     self._save_data()
                     return 0
-            for dynamic in dynamic_history['data']['cards']:
-                dynamic_id = dynamic['desc']['dynamic_id']
-                select = self.db_cursor.execute('''SELECT "id" FROM "main"."dynamics" WHERE "id" = ?;''', (dynamic_id,)).fetchall()
-                if len(select) == 0:
-                    dynamic['card'] = json.loads(dynamic['card'])
-                    dynamic['extend_json'] = json.loads(dynamic['extend_json'])
-                    self.db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "status", "data") VALUES (?, ?, ?, ?);''', (dynamic_id, self.uploader_uid, 0, json.dumps(dynamic)))
-                counter = counter + 1
+            if 'cards' in dynamic_history['data']:
+                for dynamic in dynamic_history['data']['cards']:
+                    dynamic_id = dynamic['desc']['dynamic_id']
+                    select = self.db_cursor.execute('''SELECT "id" FROM "main"."dynamics" WHERE "id" = ?;''', (dynamic_id,)).fetchall()
+                    if len(select) == 0:
+                        dynamic['card'] = json.loads(dynamic['card'])
+                        dynamic['extend_json'] = json.loads(dynamic['extend_json'])
+                        self.db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "status", "data") VALUES (?, ?, ?, ?);''', (dynamic_id, self.uploader_uid, 0, json.dumps(dynamic)))
+                    counter = counter + 1
             self._save_data()
             if dynamic_offset == 0:
                 return counter
@@ -95,11 +96,12 @@ class UploaderDynamic(object):
                 time.sleep(1)
                 continue
             dynamic_offset = dynamic_history['data']['next_offset']
-            for dynamic in dynamic_history['data']['cards']:
-                dynamic_id = dynamic['desc']['dynamic_id']
-                dynamic['card'] = json.loads(dynamic['card'])
-                dynamic['extend_json'] = json.loads(dynamic['extend_json'])
-                dynamic_dict[str(dynamic_id)] = dynamic
+            if 'cards' in dynamic_history['data']:
+                for dynamic in dynamic_history['data']['cards']:
+                    dynamic_id = dynamic['desc']['dynamic_id']
+                    dynamic['card'] = json.loads(dynamic['card'])
+                    dynamic['extend_json'] = json.loads(dynamic['extend_json'])
+                    dynamic_dict[str(dynamic_id)] = dynamic
             if dynamic_history['data']['next_offset'] == 0:
                 return dynamic_dict
 

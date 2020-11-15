@@ -52,15 +52,16 @@ class UploaderDynamic(object):
                 if not 'cards' in dynamic_history['data']:
                     self._save_data()
                     return 0
+            if dynamic_offset == 0:
+                self._save_data()
+                return counter
             for dynamic in dynamic_history['data']['cards']:
                 dynamic_id = dynamic['desc']['dynamic_id']
                 dynamic['card'] = json.loads(dynamic['card'])
                 dynamic['extend_json'] = json.loads(dynamic['extend_json'])
                 self.uploader_data['dynamics'][str(dynamic_id)] = dynamic
                 counter = counter + 1
-            if dynamic_offset == 0:
-                self._save_data()
-                return counter
+
 
 
     '''
