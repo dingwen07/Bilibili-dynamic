@@ -139,6 +139,16 @@ class UploaderDynamic(object):
                                 );''')
 
     @staticmethod
+    def get_dynamic(dynamic_id, database_file='dynamic_data.db'):
+        """
+        docstring
+        """
+        db = sqlite3.connect(database_file)
+        db_cursor = db.cursor()
+        select = db_cursor.execute('''SELECT "id", "status" FROM "main"."dynamics" WHERE "id" = ?;''', (dynamic_id,)).fetchall()[0]
+        return select
+
+    @staticmethod
     def migrate(uploader_uid, database_file='dynamic_data.db'):
         uploader_data_file = 'uploader_data/{}.json'.format(uploader_uid)
         with open(uploader_data_file, 'r') as load_file:
