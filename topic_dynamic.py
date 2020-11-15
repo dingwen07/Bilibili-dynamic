@@ -1,6 +1,7 @@
 import requests
 import json
 from urllib import parse
+import time
 
 
 class TopicDynamic(object):
@@ -22,36 +23,15 @@ class TopicDynamic(object):
                     topic_info_response = self.session.get(url)
                     break
                 except:
-                    print("连接失败，重连中...")
-                    print()
+                    time.sleep(1)
             topic_info = json.loads(topic_info_response.content.decode())
             self.topic_data = {
                 'topic': topic_info,
                 'dynamics': {}
             }
-            self.fetch()
+            self.get_update(True)
 
-    def fetch(self, dynamic_offset=0, counter=0):
-        url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_history?topic_name={}&offset_dynamic_id={}'.format(
-            str(self.topic_url_parsed), str(dynamic_offset))
-        while True:
-            try:
-                dynamic_response = self.session.get(url)
-                break
-            except:
-                print("连接失败，重连中...")
-                print()
-        dynamic_history = json.loads(dynamic_response.content.decode())
-        for dynamic in dynamic_history['data']['cards']:
-            dynamic_id = dynamic['desc']['dynamic_id']
-            dynamic['card'] = json.loads(dynamic['card'])
-            dynamic['extend_json'] = json.loads(dynamic['extend_json'])
-            self.topic_data['dynamics'][str(dynamic_id)] = dynamic
-            counter = counter + 1
-            self._save_data()
-            return counter
-
-    def get_update(self):
+    def get_update(self, is_first_fetch=False):
         dynamic_offset = 0
         url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_history?topic_name={}&offset_dynamic_id={}'.format(
             str(self.topic_url_parsed), str(dynamic_offset))
@@ -60,19 +40,19 @@ class TopicDynamic(object):
                 dynamic_response = self.session.get(url)
                 break
             except:
-                print("连接失败，重连中...")
-                print()
+                time.sleep(1)
         dynamic_history = json.loads(dynamic_response.content.decode())
         new_dynamics = []
-        for dynamic in dynamic_history['data']['cards']:
-            dynamic_id = dynamic['desc']['dynamic_id']
-            if not str(dynamic_id) in self.topic_data['dynamics']:
-                dynamic['card'] = json.loads(dynamic['card'])
-                dynamic['extend_json'] = json.loads(dynamic['extend_json'])
-                self.topic_data['dynamics'][str(dynamic_id)] = dynamic
-                new_dynamics.append(dynamic.copy())
-        if len(new_dynamics) > 0:
-            self._save_data()
+        if not is_first_fetch:
+            for dynamic in dynamic_history['data']['cards']:
+                dynamic_id = dynamic['desc']['dynamic_id']
+                if not str(dynamic_id) in self.topic_data['dynamics']:
+                    dynamic['card'] = json.loads(dynamic['card'])
+                    dynamic['extend_json'] = json.loads(dynamic['extend_json'])
+                    self.topic_data['dynamics'][str(dynamic_id)] = dynamic
+                    new_dynamics.append(dynamic.copy())
+            if len(new_dynamics) > 0:
+                self._save_data()
         return new_dynamics
 
     def _save_data(self):
