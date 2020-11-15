@@ -136,7 +136,10 @@ dmypy.json
 .pyre/
 
 uploader_data/*
+topic_data/*
 !uploader_data/README.txt
+!topic_data/README.txt
 diagnosis.json
 alert.mp3
+*.db
 
