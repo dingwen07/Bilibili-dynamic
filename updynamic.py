@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import time
+import os
 
 import requests
 
@@ -11,6 +12,8 @@ class UploaderDynamic(object):
         self.uploader_uid = uploader_uid
         self.dynamic_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={}&offset_dynamic_id={}&need_top=1'.format(str(self.uploader_uid), '{}')
         self.session = requests.Session()
+        if not os.path.exists(database_file):
+            UploaderDynamic.init_db(database_file)
         self.db = sqlite3.connect(database_file)
         self.db_cursor = self.db.cursor()
         uploader_data = self.db_cursor.execute('''SELECT "uid", "name", "data" FROM "main"."uploader_info" WHERE "uid" = ?;''', (uploader_uid,)).fetchall()
