@@ -119,6 +119,9 @@ class UploaderDynamic(object):
         self._save_data()
         return counter
 
+    def close(self):
+        self.db.close()
+
     def _save_data(self):
         self.db.commit()
 
@@ -140,6 +143,8 @@ class UploaderDynamic(object):
                                 PRIMARY KEY("id"),
                                 FOREIGN KEY("uid") REFERENCES "uploader_info"("uid")
                                 );''')
+        db.commit()
+        db.close()
 
     @staticmethod
     def get_dynamic(dynamic_id, database_file='dynamic_data.db'):
@@ -149,6 +154,7 @@ class UploaderDynamic(object):
         db = sqlite3.connect(database_file)
         db_cursor = db.cursor()
         select = db_cursor.execute('''SELECT "id", "status" FROM "main"."dynamics" WHERE "id" = ?;''', (dynamic_id,)).fetchall()[0]
+        db.close()
         return select
 
     @staticmethod
@@ -178,3 +184,4 @@ class UploaderDynamic(object):
             if len(select) == 0:
                 db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "status", "data") VALUES (?, ?, ?, ?);''', (dynamic_id, uploader_uid, 0, json.dumps(dynamic)))
         db.commit()
+        db.close()
