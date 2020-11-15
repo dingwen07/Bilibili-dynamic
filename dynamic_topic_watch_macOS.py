@@ -1,12 +1,12 @@
 import json
 import time
-import topic_dynamic
+import topic_dynamic_json
 import os
 
 topic = input('话题名称：')
 
 try:
-    topicwh = topic_dynamic.TopicDynamic(topic)
+    topicwh = topic_dynamic_json.TopicDynamic(topic)
 except ValueError:
     print('该话题不存在，请检查后再试！')
     exit(1)

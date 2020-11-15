@@ -1,10 +1,10 @@
 import json
 import time
-import topic_dynamic
+import topic_dynamic_json
 
 topic = input('话题名称: ')
 
-topicwh = topic_dynamic.TopicDynamic(topic)
+topicwh = topic_dynamic_json.TopicDynamic(topic)
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
