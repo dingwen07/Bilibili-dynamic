@@ -1,7 +1,7 @@
 ---
 name: "[简体中文] 创建错误报告"
 about: 创建错误报告以帮助我们改进项目
-title: "[BUG]"
+title: "[BUG] "
 labels: ''
 assignees: ''
 

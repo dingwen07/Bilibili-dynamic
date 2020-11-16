@@ -1,7 +1,7 @@
 ---
 name: "[简体中文] 功能请求"
 about: 你希望的能够在项目中增加的功能
-title: "[Feature Request]"
+title: "[Feature Request] "
 labels: ''
 assignees: ''
 
