@@ -7,11 +7,17 @@ assignees: ''
 
 ---
 
-<!-- 请务必在上方文本框处 [Unrecognized Dynamics] 后填入清晰明了的标题 -->
-<!-- 如果您了解怎么做，请在 diagnosis.json 中定位 ["diagnosis"][index]["desc"]["type"] 的值并在标题中包括它-->
+<!-- 请运行诊断工具 "diagnosis.py" 获取所需信息 -->
+<!-- 请务必在上方文本框处 [Unrecognized Dynamics] 后填入包含动态类型的标题 -->
+<!-- 分别提交每条无法识别的动态 -->
+
+**动态信息**
+完成下列信息:
+ - 动态ID: [诊断信息中的 **Dynamic ID**]
+ - 动态类型: [诊断信息中的 **Dynamic Type**]
 
 **动态数据**
-在此粘贴 **diagnosis.json** 的内容，它可以由文本编辑器打开。如果您了解怎么做，请分别提交文件中 ["diagnosis"] 列表下的每个项目。
+将诊断信息中 **Dynamic Data** 的值粘贴在此处 (如果诊断工具无法运行, 请在 Issue 中附加 **diagnosis.json**)
 ```json
 // 在此粘贴
 ```
