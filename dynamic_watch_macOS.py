@@ -74,17 +74,17 @@ while True:
                 with open('diagnosis.json', 'w') as dump_file:
                     json.dump(diagnosis, dump_file)
                     print('发现不能被识别的动态类型，请将"diagnosis.json"提交给开发者')
-            title = '您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name)
-            print(title)
+            title_announce = '您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name)
+            print(title_announce)
             print('动态ID: {}'.format(dynamic_id))
             print('动态内容: {}'.format(content))
             if type_contains_title:
                 print('稿件标题：{}'.format(title))
             if use_tts:
-                os.system('osascript -e \'display notification "{}" with title "{}"\''.format(content, title))
+                os.system('osascript -e \'display notification "{}" with title "{}"\''.format(content, title_announce))
                 os.system('osascript -e \'say "您关注的UP主发布了新的{}"\''.format(type_name))
                 os.system('osascript -e \'say "动态内容：{}"\''.format(content))
             else:
-                os.system('osascript -e \'display notification "{}" with title "{}"\' sound name \"Purr\"'.format(content, title))
+                os.system('osascript -e \'display notification "{}" with title "{}"\' sound name \"Purr\"'.format(content, title_announce))
 
     time.sleep(60)
