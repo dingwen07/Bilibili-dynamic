@@ -1,13 +1,13 @@
 ---
 name: "[简体中文] 提交未知类型动态"
 about: 提交无法识别的动态以帮助项目能够识别更多类型的动态
-title: "[Unrecognized Dynamic]"
+title: "[Unrecognized Dynamics]"
 labels: ''
 assignees: ''
 
 ---
 
-<!-- 请务必在上方文本框处 [Unrecognized Dynamic] 后填入清晰明了的标题 -->
+<!-- 请务必在上方文本框处 [Unrecognized Dynamics] 后填入清晰明了的标题 -->
 <!-- 如果您了解怎么做，请在 diagnosis.json 中定位 ["diagnosis"][index]["desc"]["type"] 的值并在标题中包括它-->
 
 **动态数据**
