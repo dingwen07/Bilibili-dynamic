@@ -1,11 +1,11 @@
 import json
 import time
-import topic_dynamic
+from topic_dynamic import TopicDynamic
 from playsound import playsound
 
 topic = input('话题名称: ')
 
-topicwh = topic_dynamic.TopicDynamic(topic)
+topicwh = TopicDynamic(topic)
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
