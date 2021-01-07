@@ -77,28 +77,53 @@ class TopicDynamic(object):
             self._save_data()
         return new_dynamics
 
-    def refresh_dynamic_status(self, topic_name):
-        dynamic_url = 'https://t.bilibili.com/{}'
+    def refresh_dynamic_status(self, topic_name='', refresh_line=100, delay=30, refresh_rate=30, offset=0):
         counter = 0
-        dynamics = self.db_cursor.execute('''SELECT "id", "status" FROM "main"."dynamics" WHERE "topic_name" = ?;''', (topic_name,)).fetchall()
+        dynamic_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={}'
+        lines_later_process = 0
+        if refresh_line == 0:
+            refresh_line = self.db_cursor.execute('''SELECT COUNT(*) FROM "main"."dynamics" WHERE "topic_name" = ?;''', (topic_name,)).fetchall()[0][0]
+        if refresh_line > refresh_rate:
+            lines_later_process = refresh_line - refresh_rate
+        dynamics = self.db_cursor.execute('''SELECT "id", "status" 
+                                             FROM "main"."dynamics" 
+                                             WHERE "topic_name" = ? 
+                                             AND "status" = 0
+                                             ORDER BY "time" DESC 
+                                             LIMIT ? OFFSET ?;''', (topic_name, refresh_rate, offset)).fetchall()
+        offset = offset + refresh_rate
         for dynamics_record in dynamics:
             if dynamics_record[1] == 0:
                 while True:
                     try:
                         result = self.session.get(dynamic_url.format(dynamics_record[0]))
-                        if result.status_code == 404:
-                            self.db_cursor.execute('''UPDATE "main"."dynamics" SET "status"=? WHERE "id"=?;''', (1, dynamics_record[0]))
-                            counter = counter + 1
+                        response = json.loads(result.content.decode())
+                        data_response = response['data']
+                        if 'card' in data_response:
                             break
                         elif result.status_code == 200:
+                            self.db_cursor.execute('''UPDATE "main"."dynamics" SET "status"=? WHERE "id"=?;''',(1, str(dynamics_record[0])))
+                            counter = counter + 1
                             break
                         else:
-                            time.sleep(3)
+                            exit(1)
                     except:
-                        time.sleep(3)
+                        try:
+                            # Exception Process When User Encounter 412 Error
+                            if result.status_code == 412:
+                                raise ConnectionError
+                        except ConnectionError:
+                            raise ConnectionRefusedError
+                        except Exception as e:
+                            print(e)
+                            continue
+                        time.sleep(10)
             else:
                 continue
         self._save_data()
+        if lines_later_process > 0:
+            time.sleep(delay)
+            counter += self.refresh_dynamic_status(topic_name, lines_later_process, delay, refresh_rate, offset)
         return counter
 
     def close(self):
