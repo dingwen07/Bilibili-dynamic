@@ -89,7 +89,7 @@ class TopicDynamic(object):
                                              FROM "main"."dynamics" 
                                              WHERE "topic_name" = ? 
                                              AND "status" = 0
-                                             ORDER BY "time" DESC 
+                                             ORDER BY "id" DESC 
                                              LIMIT ? OFFSET ?;''', (topic_name, refresh_rate, offset)).fetchall()
         offset = offset + refresh_rate
         for dynamics_record in dynamics:
