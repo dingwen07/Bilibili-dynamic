@@ -1,4 +1,6 @@
 # Bilibili-dynamic
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdingwen07%2FBilibili-dynamic.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdingwen07%2FBilibili-dynamic?ref=badge_shield)
+
 
 [中文版本](./README_CN.md)
 
@@ -282,3 +284,7 @@ Bilibili dynamic getter. User only need to provide UID / topic name to get the l
       是否开启语音提醒功能？(Y/N)
       ```
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdingwen07%2FBilibili-dynamic.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdingwen07%2FBilibili-dynamic?ref=badge_large)
