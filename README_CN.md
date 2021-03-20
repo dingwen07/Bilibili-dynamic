@@ -1,3 +1,5 @@
 # Bilibili-dynamic
 
-[English Version](/README_ENG.md)
+[English Version](/README.md)
+
+TBA
