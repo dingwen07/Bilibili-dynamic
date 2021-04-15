@@ -44,8 +44,7 @@
             "contains_title": false,
             "path": [
                 "card",
-                "item",
-                "description"
+                "dynamic"
             ]
         },
         "64": {
@@ -53,7 +52,7 @@
             "contains_title": true,
             "path": [
                 "card",
-                "dynamic"
+                "summary"
             ],
             "title_path": [
                 "card",
