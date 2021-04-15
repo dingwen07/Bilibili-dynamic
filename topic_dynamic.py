@@ -6,6 +6,9 @@ from urllib import parse
 
 import requests
 
+with open('dynamic_types.json', 'r') as load_file:
+    dynamic_types = json.load(load_file)
+
 
 class TopicDynamic(object):
     def __init__(self, topic_name, database_file='topic_dynamic_data.db'):
@@ -53,24 +56,22 @@ class TopicDynamic(object):
         new_dynamics = []
         for dynamic in dynamic_history['data']['cards']:
             dynamic_id = dynamic['desc']['dynamic_id']
-            dynamic_uploader_uid = dynamic['desc']['uid']
-            dynamic_post_time = time.localtime(dynamic['desc']['timestamp'])
-            dynamic_post_time_formatted = time.strftime("%Y-%m-%d %H:%M:%S", dynamic_post_time)
-            if 'item' in json.loads(dynamic['card']):
-                if 'description' in json.loads(dynamic['card'])['item']:
-                    dynamic_description = json.loads(dynamic['card'])['item']['description']
-                elif 'content' in json.loads(dynamic['card'])['item']:
-                    dynamic_description = json.loads(dynamic['card'])['item']['content']
-                else:
-                    raise KeyError
-            elif 'dynamic' in json.loads(dynamic['card']):
-                dynamic_description = json.loads(dynamic['card'])['dynamic']
-            else:
-                raise KeyError
-            select = self.db_cursor.execute('''SELECT "id" FROM "main"."dynamics" WHERE "id" = ?;''', (dynamic_id,)).fetchall()
+            select = self.db_cursor.execute('''SELECT "id" FROM "main"."dynamics" WHERE "id" = ?;''',
+                                            (dynamic_id,)).fetchall()
             if len(select) == 0:
                 dynamic['card'] = json.loads(dynamic['card'])
                 dynamic['extend_json'] = json.loads(dynamic['extend_json'])
+                dynamic_uploader_uid = dynamic['desc']['uid']
+                dynamic_post_time = time.localtime(dynamic['desc']['timestamp'])
+                dynamic_post_time_formatted = time.strftime("%Y-%m-%d %H:%M:%S", dynamic_post_time)
+                dynamic_description = "未解析"
+                dynamic_type = str(dynamic['desc']['type'])
+                if dynamic_type in dynamic_types['types']:
+                    type_data = dynamic_types['types'][dynamic_type]
+                    type_content_path = type_data['path']
+                    dynamic_description = dynamic.copy()
+                    for k in type_content_path:
+                        dynamic_description = dynamic_description[k]
                 self.db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data") VALUES (?, ?, ?, ?, ?, ?, ?);''', (dynamic_id, dynamic_uploader_uid, self.topic, dynamic_post_time_formatted, 0, dynamic_description, json.dumps(dynamic)))
                 new_dynamics.append(dynamic.copy())
         if len(new_dynamics) > 0:
