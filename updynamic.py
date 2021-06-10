@@ -2,14 +2,19 @@ import json
 import sqlite3
 import time
 import os
-
+import re
 import requests
+
+from urllib.parse import urlparse
+
+URL_REGEX = r"""(?i)\b((?:https?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:\'\".,<>?«»“”‘’])|(?:(?<!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)\b/?(?!@)))"""
 
 
 class UploaderDynamic(object):
-    def __init__(self, uploader_uid, database_file='dynamic_data.db'):
+    def __init__(self, uploader_uid, database_file='dynamic_data.db', resource_base_path='./resource_cache'):
         super().__init__()
         self.uploader_uid = uploader_uid
+        self.resource_path = resource_base_path + '/' + str(self.uploader_uid)
         self.dynamic_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={}&offset_dynamic_id={}&need_top=1'.format(str(self.uploader_uid), '{}')
         self.session = requests.Session()
         if not os.path.exists(database_file):
@@ -62,6 +67,7 @@ class UploaderDynamic(object):
                         dynamic['card'] = json.loads(dynamic['card'])
                         dynamic['extend_json'] = json.loads(dynamic['extend_json'])
                         self.db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "status", "data") VALUES (?, ?, ?, ?);''', (dynamic_id, self.uploader_uid, 0, json.dumps(dynamic)))
+                        self.download_resources(dynamic, self.resource_path)
                     counter = counter + 1
             self._save_data()
             if dynamic_offset == 0:
@@ -80,6 +86,7 @@ class UploaderDynamic(object):
                 dynamic['card'] = json.loads(dynamic['card'])
                 dynamic['extend_json'] = json.loads(dynamic['extend_json'])
                 self.db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "status", "data") VALUES (?, ?, ?, ?);''', (dynamic_id, self.uploader_uid, 0, json.dumps(dynamic)))
+                self.download_resources(dynamic, self.resource_path)
                 new_dynamics.append(dynamic.copy())
         if len(new_dynamics) > 0:
             self._save_data()
@@ -124,6 +131,39 @@ class UploaderDynamic(object):
 
     def _save_data(self):
         self.db.commit()
+
+
+    @staticmethod
+    def download_resources(data: dict, resource_path: str='./resource_cache'):
+        # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
+        RESOURCE_TYPES = ['apng', 'avif', 'gif', 'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'png', 'svg', 'tiff', 'webp']
+        def get_dict_values(data: list, target: dict):
+            for key, value in target.items():
+                if isinstance(value, dict):
+                    get_dict_values(data, value)
+                else:
+                    data.append(str(value))
+        dict_values = []
+        get_dict_values(dict_values, data)
+        dict_values_str = ' '.join(dict_values)
+        urls = re.findall(URL_REGEX, dict_values_str)
+        for url in urls:
+            if url[-3:] in RESOURCE_TYPES or url[-4:] in RESOURCE_TYPES or url[-5:] in RESOURCE_TYPES:
+                o = urlparse(url)
+                netloc = o.netloc.replace(':', '_')
+                down_path = resource_path + '/' + netloc + '/' + o.path
+                if not os.path.exists(down_path):
+                    response = requests.get(url)
+                    if response.status_code == 200:
+                        try:
+                            os.makedirs(os.path.dirname(down_path))
+                        except:
+                            pass
+                        with open(down_path, 'wb') as f:
+                            f.write(response.content)
+                    else:
+                        print('[WARN] Download of {} failed with code {}'.format(url, str(response.status_code)))
+
 
     @staticmethod
     def init_db(database_file='dynamic_data.db'):
