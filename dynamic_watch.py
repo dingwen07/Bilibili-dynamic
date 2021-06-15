@@ -60,4 +60,3 @@ while True:
         print(e)
     finally:
         time.sleep(30)
-
