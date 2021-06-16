@@ -25,10 +25,11 @@ while True:
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
+# noinspection PyBroadException
 try:
     with open('diagnosis.json', 'r') as load_file:
         diagnosis = json.load(load_file)
-except:
+except Exception:
     diagnosis = {'diagnosis': []}
     with open('diagnosis.json', 'w') as dump_file:
         json.dump(diagnosis, dump_file)
@@ -40,6 +41,7 @@ if use_tts:
     os.system('osascript -e \'say "Bilibili UP主更新提醒"\'')
     os.system('osascript -e \'say "开始监视UP主的更新"\'')
 else:
+    # TODO: fix line too long, need testing after shortening the line length, I don’t have macOS
     os.system('osascript -e \'display notification \"开始监视UP主<{}>的更新...\" with title \"Bilibili UP主更新提醒\" sound name \"Purr\"\''.format(
         uploader_name))
 print('开始监视UP主<{}>的更新...'.format(uploader_name))

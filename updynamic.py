@@ -52,9 +52,10 @@ class UploaderDynamic(object):
         dynamic_offset = 0
         while True:
             url = self.dynamic_url.format(str(dynamic_offset))
+            # noinspection PyBroadException
             try:
                 dynamic_response = self.session.get(url)
-            except:
+            except Exception:
                 time.sleep(1)
                 continue
             dynamic_history = json.loads(dynamic_response.content.decode())
@@ -112,9 +113,10 @@ class UploaderDynamic(object):
         dynamic_offset = 0
         while True:
             url = self.dynamic_url.format(str(dynamic_offset))
+            # noinspection PyBroadException
             try:
                 dynamic_response = self.session.get(url)
-            except:
+            except Exception:
                 continue
             dynamic_history = json.loads(dynamic_response.content.decode())
             if dynamic_history['code'] != 0:
@@ -170,9 +172,10 @@ class UploaderDynamic(object):
                 if not os.path.exists(down_path):
                     response = requests.get(url)
                     if response.status_code == 200:
+                        # noinspection PyBroadException
                         try:
                             os.makedirs(os.path.dirname(down_path))
-                        except:
+                        except Exception:
                             pass
                         with open(down_path, 'wb') as f:
                             f.write(response.content)
