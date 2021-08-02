@@ -9,7 +9,7 @@ from updynamic import UploaderDynamic
 def send_notification(app_id, title, msg, icon, action_label, action_link):
     urls = re.findall(URL_REGEX, icon)
     if len(urls) == 1:
-        icon = UploaderDynamic.download_resources({'': urls[0]})[0]
+        icon = UploaderDynamic.download_resources({'': urls[0]}, './resource_cache/0')[0]
     toast = Notification(app_id=app_id,
                          title=title,
                          msg=msg,
