@@ -164,11 +164,13 @@ class UploaderDynamic(object):
         get_dict_values(dict_values, dynamic)
         dict_values_str = ' '.join(dict_values)
         urls = re.findall(URL_REGEX, dict_values_str)
+        downloaded_files = []
         for url in urls:
             if url[-3:] in RESOURCE_TYPES or url[-4:] in RESOURCE_TYPES or url[-5:] in RESOURCE_TYPES:
                 o = urlparse(url)
                 netloc = o.netloc.replace(':', '_')
                 down_path = resource_path + '/' + netloc + '/' + o.path
+                downloaded_files.append(os.path.abspath(down_path))
                 if not os.path.exists(down_path):
                     response = requests.get(url)
                     if response.status_code == 200:
@@ -181,6 +183,9 @@ class UploaderDynamic(object):
                             f.write(response.content)
                     else:
                         print('[WARN] Download of {} failed with code {}'.format(url, str(response.status_code)))
+                        downloaded_files.pop()
+
+        return downloaded_files
 
     @staticmethod
     def init_db(database_file='dynamic_data.db'):
