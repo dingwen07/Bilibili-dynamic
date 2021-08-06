@@ -1,12 +1,11 @@
 import json
 import time
+import updynamic
 from playsound import playsound
-
-from .updynamic import UploaderDynamic
 
 uid = int(input('UP主UID: '))
 
-upwh = UploaderDynamic(uid)
+upwh = updynamic.UploaderDynamic(uid)
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)

@@ -1,9 +1,7 @@
 import json
 import time
+from topic_dynamic import TopicDynamic
 from playsound import playsound
-
-from .topic_dynamic import TopicDynamic
-
 
 topic = input('话题名称: ')
 

@@ -1,11 +1,10 @@
 import json
 import time
+from topic_dynamic import TopicDynamic
+
 # from win10toast import ToastNotifier
-
-from .topic_dynamic import TopicDynamic
-from .toast_win import send_notification
-from .constants import APP_ID, BILIBILI_ICON_URL
-
+from constants import APP_ID, BILIBILI_ICON_URL
+from toast_win import send_notification
 
 topic = input('话题名称: ')
 
