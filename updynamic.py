@@ -149,6 +149,23 @@ class UploaderDynamic(object):
         self._save_data()
         return counter
 
+    def refresh_info(self):
+        url = 'https://api.bilibili.com/x/space/acc/info?mid={}&jsonp=jsonp'.format(str(self.uploader_uid))
+        uploader_info_response = self.session.get(url)
+        uploader_info = json.loads(uploader_info_response.content.decode())
+        if uploader_info['code'] != 0:
+            if uploader_info['code'] == -404:
+                raise ValueError
+            elif uploader_info['code'] == -400:
+                raise ValueError
+            else:
+                raise ValueError
+        uploader_name = uploader_info['data']['name']
+        self.uploader_name = uploader_name
+        self.db_cursor.execute('''UPDATE "main"."uploader_info" SET "name"=?, "data"=? WHERE "uid"=?;''',
+                               (uploader_name, json.dumps(uploader_info['data']), self.uploader_uid))
+        self._save_data()
+
     def close(self):
         self.db.close()
 
