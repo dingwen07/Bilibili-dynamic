@@ -7,8 +7,12 @@ import requests
 
 from urllib.parse import urlparse
 
-from constants import URL_REGEX
-from constants import RESOURCE_TYPES
+try:
+    from .constants import URL_REGEX
+    from .constants import RESOURCE_TYPES
+except ImportError:
+    from constants import URL_REGEX
+    from constants import RESOURCE_TYPES
 
 
 class UploaderDynamic(object):
