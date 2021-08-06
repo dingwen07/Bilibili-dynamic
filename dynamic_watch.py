@@ -1,10 +1,11 @@
 import json
 import time
-import updynamic
+
+from .updynamic import UploaderDynamic
 
 uid = int(input('UP主UID: '))
 
-upwh = updynamic.UploaderDynamic(uid)
+upwh = UploaderDynamic(uid)
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)

@@ -1,13 +1,14 @@
 import json
 import time
-import updynamic
 
-from constants import APP_ID, BILIBILI_ICON_URL
-from toast_win import send_notification
+from .updynamic import UploaderDynamic
+from .toast_win import send_notification
+from .constants import APP_ID, BILIBILI_ICON_URL
+
 
 uid = int(input('UP主UID: '))
 
-upwh = updynamic.UploaderDynamic(uid)
+upwh = UploaderDynamic(uid)
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)

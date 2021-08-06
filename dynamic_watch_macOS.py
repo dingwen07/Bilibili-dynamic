@@ -1,12 +1,13 @@
 import json
 import time
-import updynamic
 import os
+
+from .updynamic import UploaderDynamic
 
 uid = int(input('UP主UID: '))
 
 try:
-    upwh = updynamic.UploaderDynamic(uid)
+    upwh = UploaderDynamic(uid)
 except ValueError:
     print('该UP主不存在，请检查后再试！')
     exit(1)
