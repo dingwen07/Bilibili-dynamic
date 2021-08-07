@@ -16,7 +16,7 @@ except ImportError:
 
 
 class UploaderDynamic(object):
-    def __init__(self, uploader_uid, cache_resource=True, database_file='dynamic_data.db',
+    def __init__(self, uploader_uid, cache_resource=True, fetch=True, database_file='dynamic_data.db',
                  resource_base_path='./resource_cache'):
         super().__init__()
         self.uploader_uid = uploader_uid
@@ -46,7 +46,8 @@ class UploaderDynamic(object):
             self.db_cursor.execute('''INSERT INTO "main"."uploader_info" ("uid", "name", "data") VALUES (?, ?, ?);''',
                                    (uploader_uid, uploader_name, json.dumps(uploader_info['data'])))
             self._save_data()
-            self.fetch()
+            if fetch:
+                self.fetch()
         uploader_data = self.db_cursor.execute(
             '''SELECT "uid", "name", "data" FROM "main"."uploader_info" WHERE "uid" = ?;''', (uploader_uid,)).fetchall()
         self.uploader_name = uploader_data[0][1]
