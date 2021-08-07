@@ -1,4 +1,5 @@
 import json
+import os
 
 
 class DynamicParser:
@@ -31,7 +32,10 @@ class DynamicParser:
 
     @staticmethod
     def dictionary_parser(dynamic):
-        with open('dynamic_types.json', 'r') as load_file:
+        filename = 'dynamic_types.json'
+        if not os.path.exists(filename):
+            filename = 'Bilibili-dynamic/dynamic_types.json'
+        with open(filename, 'r') as load_file:
             dynamic_types = json.load(load_file)
 
         try:
