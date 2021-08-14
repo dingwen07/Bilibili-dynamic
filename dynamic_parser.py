@@ -5,7 +5,18 @@ import os
 class DynamicParser:
     @staticmethod
     def plaintext_parser(dynamic) -> str:
-        return str(dynamic)
+        processed_dynamic = DynamicParser.dictionary_parser(dynamic)
+        if processed_dynamic['code'] != 0:
+            return processed_dynamic['msg']
+        else:
+            processed_dynamic = processed_dynamic['data']
+            output = '动态地址:\n\thttps://t.bilibili.com/{}\n'.format(processed_dynamic['dynamic_id'])
+            output += 'UP主名称: {}\t'.format(processed_dynamic['dynamic_uploader_name'])
+            output += 'UID: {}\n'.format(processed_dynamic['dynamic_uploader_uid'])
+            output += '动态内容: \n\t{}\n'.format(processed_dynamic['content'])
+            if processed_dynamic['type_contains_title']:
+                output += '稿件标题: \n\t{}'.format(processed_dynamic['title'])
+            return output
 
     @staticmethod
     def markdown_parser(dynamic) -> str:
@@ -18,16 +29,16 @@ class DynamicParser:
             return '<strong>{}</strong>'.format(processed_dynamic['msg'])
         else:
             processed_dynamic = processed_dynamic['data']
-            output = '<strong>UP主名称: </strong><code>{}</code>\n'.format(processed_dynamic['dynamic_uploader_name'])
+            output = '<strong>动态地址: </strong>\n'
+            link = 'https://t.bilibili.com/{}\n'.format(processed_dynamic['dynamic_id'])
+            output += '<a href=\"{}\">{}</a>'.format(link, link)
+            output += '<strong>UP主名称: </strong><code>{}</code>\n'.format(processed_dynamic['dynamic_uploader_name'])
             output += '<strong>UID: </strong><code>{}</code>\n'.format(processed_dynamic['dynamic_uploader_uid'])
             output += '<strong>动态内容: </strong>\n'
-            output += '<pre>{}</pre>\n'.format(processed_dynamic['content'])
+            output += '{}\n'.format(processed_dynamic['content'])
             if processed_dynamic['type_contains_title']:
                 output += '<strong>稿件标题: </strong>\n'
-                output += '<pre>{}</pre>'.format(processed_dynamic['title'])
-            output = output + '<strong>动态地址: </strong>\n'
-            link = 'https://t.bilibili.com/{}'.format(processed_dynamic['dynamic_id'])
-            output += '<a href=\"{}\">{}</a>'.format(link, link)
+                output += '<pre>{}</pre>\n'.format(processed_dynamic['title'])
             return output
 
     @staticmethod
