@@ -58,6 +58,15 @@
                 "card",
                 "title"
             ]
+        },
+        "2048":{
+            "name": "\u6d3b\u52a8\u6295\u7a3f",
+            "contains_title": false,
+            "path": [
+                "card",
+                "vest",
+                "content"
+            ]
         }
     }
 }
