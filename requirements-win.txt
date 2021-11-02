@@ -1,2 +1,3 @@
 -r requirements.txt
 win10toast>=0.9
+winotify~=1.0.4
