@@ -10,15 +10,20 @@ with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
 
 
-# TODO: Need to test
 class TopicDynamic(object):
-    def __init__(self, topic_name, database_file='topic_dynamic_data.db'):
+    def __init__(self, topic_id=0, topic_name='', database_file='topic_dynamic_data.db', legacy_mode=True):
         super().__init__()
-        self.topic = topic_name
-        self.topic_url_parsed = parse.quote(topic_name)
-        # TODO: just shortened this line, need testing
-        self.topic_dynamic_url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_history?topic_name={}' \
-                                 '&offset_dynamic_id={}'.format(self.topic_url_parsed, '{}')
+        self.legacy_mode = legacy_mode
+        if self.legacy_mode:
+            self.topic = topic_name
+            self.topic_url_parsed = parse.quote(topic_name)
+            self.topic_dynamic_url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_history?topic_name={}' \
+                                     '&offset_dynamic_id={}'.format(self.topic_url_parsed, '{}')
+        else:
+            self.topic = topic_name
+            self.topic_id = topic_id
+            self.topic_dynamic_url = 'https://app.bilibili.com/x/topic/web/details/cards?topic_id={}' \
+                                     '&offset_dynamic_id={}'.format(self.topic_id, '{}')
         self.session = requests.Session()
         if not os.path.exists(database_file):
             TopicDynamic.init_db(database_file)
@@ -28,8 +33,12 @@ class TopicDynamic(object):
             '''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?; ''',
             (self.topic,)).fetchall()
         if len(topic_data) == 0:
-            url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_new?topic_name={}'.format(
-                self.topic_url_parsed)
+            if self.legacy_mode:
+                url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_new?topic_name={}'.format(
+                    self.topic_url_parsed)
+            else:
+                url = 'https://app.bilibili.com/x/topic/web/details/cards?topic_id={}&sort_by={}'.format(
+                    self.topic_id, 3)
             while True:
                 # noinspection PyBroadException
                 try:
@@ -65,32 +74,59 @@ class TopicDynamic(object):
                 time.sleep(1)
         dynamic_history = json.loads(dynamic_response.content.decode())
         new_dynamics = []
-        for dynamic in dynamic_history['data']['cards']:
-            dynamic_id = dynamic['desc']['dynamic_id']
-            select = self.db_cursor.execute('''SELECT "id" FROM "main"."dynamics" WHERE "id" = ?;''',
-                                            (dynamic_id,)).fetchall()
-            if len(select) == 0:
-                dynamic['card'] = json.loads(dynamic['card'])
-                dynamic['extend_json'] = json.loads(dynamic['extend_json'])
-                dynamic_uploader_uid = dynamic['desc']['uid']
-                dynamic_post_time = time.localtime(dynamic['desc']['timestamp'])
-                dynamic_post_time_formatted = time.strftime("%Y-%m-%d %H:%M:%S", dynamic_post_time)
-                dynamic_description = "未解析"
-                dynamic_type = str(dynamic['desc']['type'])
-                if dynamic_type in dynamic_types['types']:
-                    type_data = dynamic_types['types'][dynamic_type]
-                    type_content_path = type_data['path']
-                    dynamic_description = dynamic.copy()
-                    for k in type_content_path:
-                        dynamic_description = dynamic_description[k]
-                # TODO: Just shortened this line, need testing
-                self.db_cursor.execute(
-                    '''INSERT INTO 
-                    "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data")
-                    VALUES (?, ?, ?, ?, ?, ?, ?);''',
-                    (dynamic_id, dynamic_uploader_uid, self.topic, dynamic_post_time_formatted, 0, dynamic_description,
-                     json.dumps(dynamic)))
-                new_dynamics.append(dynamic.copy())
+        if self.legacy_mode:
+            for dynamic in dynamic_history['data']['cards']:
+                dynamic_id = dynamic['desc']['dynamic_id']
+                select = self.db_cursor.execute(
+                    '''SELECT "id" FROM "main"."dynamics" WHERE "id" = {};'''.format(dynamic_id)).fetchall()
+                if len(select) == 0:
+                    dynamic['card'] = json.loads(dynamic['card'])
+                    dynamic['extend_json'] = json.loads(dynamic['extend_json'])
+                    dynamic_uploader_uid = dynamic['desc']['uid']
+                    dynamic_post_time = time.localtime(dynamic['desc']['timestamp'])
+                    dynamic_post_time_formatted = time.strftime("%Y-%m-%d %H:%M:%S", dynamic_post_time)
+                    dynamic_description = "未解析"
+                    dynamic_type = str(dynamic['desc']['type'])
+                    if dynamic_type in dynamic_types['types']:
+                        type_data = dynamic_types['types'][dynamic_type]
+                        type_content_path = type_data['path']
+                        dynamic_description = dynamic.copy()
+                        for k in type_content_path:
+                            dynamic_description = dynamic_description[k]
+                    self.db_cursor.execute(
+                        '''INSERT INTO 
+                        "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data")
+                        VALUES (?, ?, ?, ?, ?, ?, ?);''',
+                        (dynamic_id, dynamic_uploader_uid, self.topic, dynamic_post_time_formatted, 0,
+                         dynamic_description,
+                         json.dumps(dynamic)))
+                    new_dynamics.append(dynamic.copy())
+        else:
+            for dynamic in dynamic_history['data']['topic_card_list']['items']:
+                dynamic_card_item = dynamic['dynamic_card_item']
+                dynamic_id = int(dynamic_card_item['id_str'])
+                select = self.db_cursor.execute(
+                    '''SELECT "id" FROM "main"."dynamics" WHERE "id" = {};'''.format(dynamic_id)).fetchall()
+                if len(select) == 0:
+                    dynamic_uploader_uid = dynamic_card_item['modules']['module_author']['mid']
+                    dynamic_post_time = time.localtime(dynamic_card_item['modules']['module_author']['pub_ts'])
+                    dynamic_post_time_formatted = time.strftime("%Y-%m-%d %H:%M:%S", dynamic_post_time)
+                    dynamic_description = "未解析"
+                    dynamic_type = str(dynamic_card_item['type'])
+                    if dynamic_type in dynamic_types['types']:
+                        type_data = dynamic_types['types'][dynamic_type]
+                        type_content_path = type_data['path']
+                        dynamic_description = dynamic_card_item.copy()
+                        for k in type_content_path:
+                            dynamic_description = dynamic_description[k]
+                    self.db_cursor.execute(
+                        '''INSERT INTO 
+                        "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data")
+                        VALUES (?, ?, ?, ?, ?, ?, ?);''',
+                        (dynamic_id, dynamic_uploader_uid, self.topic, dynamic_post_time_formatted, 0,
+                         dynamic_description,
+                         json.dumps(dynamic)))
+                    new_dynamics.append(dynamic.copy())
         if len(new_dynamics) > 0:
             self._save_data()
         return new_dynamics
@@ -100,8 +136,9 @@ class TopicDynamic(object):
         dynamic_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={}'
         lines_later_process = 0
         if refresh_line == 0:
-            refresh_line = self.db_cursor.execute('''SELECT COUNT(*) FROM "main"."dynamics" WHERE "topic_name" = ?;''',
-                                                  (topic_name,)).fetchall()[0][0]
+            refresh_line = \
+                self.db_cursor.execute('''SELECT COUNT(*) FROM "main"."dynamics" WHERE "topic_name" = ?;''',
+                                       (topic_name,)).fetchall()[0][0]
         if refresh_line > refresh_rate:
             lines_later_process = refresh_line - refresh_rate
         dynamics = self.db_cursor.execute('''SELECT "id", "status" 
@@ -189,14 +226,14 @@ class TopicDynamic(object):
         return select
 
     @staticmethod
-    def migrate(topic_name, database_file='topic_dynamic_data.db'):
+    def migrate(topic_name, topic_id, database_file='topic_dynamic_data.db'):
         topic_data_file = 'topic_data/{}.json'.format(topic_name)
         with open(topic_data_file, 'r') as load_file:
             migrate_data = json.load(load_file)
         session = requests.Session()
         db = sqlite3.connect(database_file)
         db_cursor = db.cursor()
-        url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_new?topic_name={}'.format(topic_name)
+        url = 'https://app.bilibili.com/x/topic/web/details/cards?topic_id={}'.format(topic_id)
         topic_data = db_cursor.execute(
             '''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?;''',
             (topic_name,)).fetchall()
@@ -239,7 +276,24 @@ class TopicDynamic(object):
                 db_cursor.execute(
                     '''INSERT INTO "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", 
                     "data") VALUES (?, ?, ?, ?, ?, ?, ?);''',
-                    (dynamic_id, dynamic_uploader_uid, topic_name, dynamic_post_time_formatted, 0, dynamic_description,
+                    (dynamic_id, dynamic_uploader_uid, topic_name, dynamic_post_time_formatted, 0,
+                     dynamic_description,
                      json.dumps(dynamic)))
         db.commit()
         db.close()
+
+    @staticmethod
+    def get_topic_id_list(topic_name, page_size=5):
+        topic_list_url = 'https://app.bilibili.com/x/topic/pub/search?keywords={}&page_size={}' \
+            .format(parse.quote(topic_name), page_size)
+        session = requests.Session()
+        topic_list_response = session.get(topic_list_url)
+        topic_list = json.loads(topic_list_response.content.decode())
+        if topic_list['code'] != 0:
+            if topic_list['code'] == -404:
+                raise ValueError
+            elif topic_list['code'] == -412:
+                raise ValueError
+            else:
+                raise ValueError
+        return topic_list['data']['topic_items']
