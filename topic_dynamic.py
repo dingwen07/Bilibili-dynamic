@@ -10,25 +10,32 @@ with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
 
 
+# TODO: Need to test
 class TopicDynamic(object):
     def __init__(self, topic_name, database_file='topic_dynamic_data.db'):
         super().__init__()
         self.topic = topic_name
         self.topic_url_parsed = parse.quote(topic_name)
-        self.topic_dynamic_url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_history?topic_name={}&offset_dynamic_id={}'.format(self.topic_url_parsed, '{}')
+        # TODO: just shortened this line, need testing
+        self.topic_dynamic_url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_history?topic_name={}' \
+                                 '&offset_dynamic_id={}'.format(self.topic_url_parsed, '{}')
         self.session = requests.Session()
         if not os.path.exists(database_file):
             TopicDynamic.init_db(database_file)
         self.db = sqlite3.connect(database_file)
         self.db_cursor = self.db.cursor()
-        topic_data = self.db_cursor.execute('''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?; ''', (self.topic,)).fetchall()
+        topic_data = self.db_cursor.execute(
+            '''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?; ''',
+            (self.topic,)).fetchall()
         if len(topic_data) == 0:
-            url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_new?topic_name={}'.format(self.topic_url_parsed)
+            url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_new?topic_name={}'.format(
+                self.topic_url_parsed)
             while True:
+                # noinspection PyBroadException
                 try:
                     topic_info_response = self.session.get(url)
                     break
-                except:
+                except Exception:
                     time.sleep(1)
             topic_info = json.loads(topic_info_response.content.decode())
             if topic_info['code'] != 0:
@@ -38,19 +45,23 @@ class TopicDynamic(object):
                     raise ValueError
                 else:
                     raise ValueError
-            self.db_cursor.execute('''INSERT INTO "main"."topic_info" ("topic_name", "data") VALUES (?, ?);''', (self.topic, json.dumps(topic_info['data'])))
+            self.db_cursor.execute('''INSERT INTO "main"."topic_info" ("topic_name", "data") VALUES (?, ?);''',
+                                   (self.topic, json.dumps(topic_info['data'])))
             self._save_data()
             self.get_update()
-            topic_data = self.db_cursor.execute('''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?; ''', (self.topic,)).fetchall()
+            topic_data = self.db_cursor.execute(
+                '''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?; ''',
+                (self.topic,)).fetchall()
 
     def get_update(self):
         dynamic_offset = 0
         url = self.topic_dynamic_url.format(str(dynamic_offset))
         while True:
+            # noinspection PyBroadException
             try:
                 dynamic_response = self.session.get(url)
                 break
-            except:
+            except Exception:
                 time.sleep(1)
         dynamic_history = json.loads(dynamic_response.content.decode())
         new_dynamics = []
@@ -72,7 +83,13 @@ class TopicDynamic(object):
                     dynamic_description = dynamic.copy()
                     for k in type_content_path:
                         dynamic_description = dynamic_description[k]
-                self.db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data") VALUES (?, ?, ?, ?, ?, ?, ?);''', (dynamic_id, dynamic_uploader_uid, self.topic, dynamic_post_time_formatted, 0, dynamic_description, json.dumps(dynamic)))
+                # TODO: Just shortened this line, need testing
+                self.db_cursor.execute(
+                    '''INSERT INTO 
+                    "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data")
+                    VALUES (?, ?, ?, ?, ?, ?, ?);''',
+                    (dynamic_id, dynamic_uploader_uid, self.topic, dynamic_post_time_formatted, 0, dynamic_description,
+                     json.dumps(dynamic)))
                 new_dynamics.append(dynamic.copy())
         if len(new_dynamics) > 0:
             self._save_data()
@@ -83,7 +100,8 @@ class TopicDynamic(object):
         dynamic_url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={}'
         lines_later_process = 0
         if refresh_line == 0:
-            refresh_line = self.db_cursor.execute('''SELECT COUNT(*) FROM "main"."dynamics" WHERE "topic_name" = ?;''', (topic_name,)).fetchall()[0][0]
+            refresh_line = self.db_cursor.execute('''SELECT COUNT(*) FROM "main"."dynamics" WHERE "topic_name" = ?;''',
+                                                  (topic_name,)).fetchall()[0][0]
         if refresh_line > refresh_rate:
             lines_later_process = refresh_line - refresh_rate
         dynamics = self.db_cursor.execute('''SELECT "id", "status" 
@@ -96,6 +114,7 @@ class TopicDynamic(object):
         for dynamics_record in dynamics:
             if dynamics_record[1] == 0:
                 while True:
+                    # noinspection PyBroadException
                     try:
                         result = self.session.get(dynamic_url.format(dynamics_record[0]))
                         response = json.loads(result.content.decode())
@@ -103,12 +122,13 @@ class TopicDynamic(object):
                         if 'card' in data_response:
                             break
                         elif result.status_code == 200:
-                            self.db_cursor.execute('''UPDATE "main"."dynamics" SET "status"=? WHERE "id"=?;''',(1, str(dynamics_record[0])))
+                            self.db_cursor.execute('''UPDATE "main"."dynamics" SET "status"=? WHERE "id"=?;''',
+                                                   (1, str(dynamics_record[0])))
                             counter = counter + 1
                             break
                         else:
                             exit(1)
-                    except:
+                    except Exception:
                         try:
                             # Exception Process When User Encounter 412 Error
                             if result.status_code == 412:
@@ -163,7 +183,8 @@ class TopicDynamic(object):
         """
         db = sqlite3.connect(database_file)
         db_cursor = db.cursor()
-        select = db_cursor.execute('''SELECT "id", "status" FROM "main"."dynamics" WHERE "id" = ?;''', (dynamic_id,)).fetchall()[0]
+        select = db_cursor.execute('''SELECT "id", "status" FROM "main"."dynamics" WHERE "id" = ?;''',
+                                   (dynamic_id,)).fetchall()[0]
         db.close()
         return select
 
@@ -176,13 +197,16 @@ class TopicDynamic(object):
         db = sqlite3.connect(database_file)
         db_cursor = db.cursor()
         url = 'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_new?topic_name={}'.format(topic_name)
-        topic_data = db_cursor.execute('''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?;''', (topic_name,)).fetchall()
+        topic_data = db_cursor.execute(
+            '''SELECT "topic_name", "data" FROM "main"."topic_info" WHERE "topic_name" = ?;''',
+            (topic_name,)).fetchall()
         if len(topic_data) == 0:
             while True:
+                # noinspection PyBroadException
                 try:
                     topic_info_response = session.get(url)
                     break
-                except:
+                except Exception:
                     time.sleep(1)
             topic_info = json.loads(topic_info_response.content.decode())
             if topic_info['code'] != 0:
@@ -212,6 +236,10 @@ class TopicDynamic(object):
             select = db_cursor.execute('''SELECT "id" FROM "main"."dynamics" WHERE "id" = ?;''',
                                        (dynamic_id,)).fetchall()
             if len(select) == 0:
-                db_cursor.execute('''INSERT INTO "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data") VALUES (?, ?, ?, ?, ?, ?, ?);''', (dynamic_id, dynamic_uploader_uid, topic_name, dynamic_post_time_formatted, 0, dynamic_description, json.dumps(dynamic)))
+                db_cursor.execute(
+                    '''INSERT INTO "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", 
+                    "data") VALUES (?, ?, ?, ?, ?, ?, ?);''',
+                    (dynamic_id, dynamic_uploader_uid, topic_name, dynamic_post_time_formatted, 0, dynamic_description,
+                     json.dumps(dynamic)))
         db.commit()
         db.close()

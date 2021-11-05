@@ -137,8 +137,10 @@ dmypy.json
 
 uploader_data/*
 topic_data/*
+resource_cache/*
 !uploader_data/README.txt
 !topic_data/README.txt
+!resource_cache/README.txt
 diagnosis.json
 alert.mp3
 *.db

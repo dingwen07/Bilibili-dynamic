@@ -1,9 +1,9 @@
 import json
 import time
 import updynamic
-from win10toast import ToastNotifier
 
-toaster = ToastNotifier()
+from constants import APP_ID, BILIBILI_ICON_URL
+from toast_win import send_notification
 
 uid = int(input('UP主UID: '))
 
@@ -11,10 +11,11 @@ upwh = updynamic.UploaderDynamic(uid)
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
+# noinspection PyBroadException
 try:
     with open('diagnosis.json', 'r') as load_file:
         diagnosis = json.load(load_file)
-except:
+except Exception:
     diagnosis = {'diagnosis': []}
     with open('diagnosis.json', 'w') as dump_file:
         json.dump(diagnosis, dump_file)
@@ -22,7 +23,10 @@ except:
 uploader_name = upwh.uploader_name
 print('开始监视UP主<{}>的更新...'.format(uploader_name))
 print()
-toaster.show_toast('Bilibili UP主更新提醒', '开始监视UP主<{}>的更新...'.format(uploader_name))
+send_notification(app_id=APP_ID, title='Bilibili UP主更新提醒', msg='开始监视UP主<{}>的更新...'.format(uploader_name),
+                  icon=BILIBILI_ICON_URL,
+                  action_label='View', action_link='https://space.bilibili.com/{}'.format(str(upwh.uploader_uid)))
+# toaster.show_toast('Bilibili UP主更新提醒', '开始监视UP主<{}>的更新...'.format(uploader_name))
 
 while True:
     try:
@@ -60,7 +64,13 @@ while True:
                 if type_contains_title:
                     print('稿件标题: {}'.format(title))
                 print()
-                toaster.show_toast('您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name), content)
+                send_notification(app_id=APP_ID, title='您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name),
+                                  msg=content,
+                                  icon=BILIBILI_ICON_URL,
+                                  action_label='View',
+                                  action_link='https://t.bilibili.com/{}'.format(str(dynamic_id)))
+
+                # toaster.show_toast('您关注的UP主<{}>发布了新的{}'.format(uploader_name, type_name), content)
     except Exception as e:
         print(e)
     finally:

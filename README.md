@@ -144,7 +144,7 @@ Bilibili dynamic getter. User only need to provide UID / topic name to get the l
       UP主UID：
       ```
 
-    - Select whether or not turn on TTS for dynamics using letter `Y` or `N`(`Y` stands for turn on, `N` stands for close): 
+    - Select whether turn on TTS for dynamics using letter `Y` or `N`(`Y` stands for turn on, `N` stands for close): 
 
       ```bash
       是否开启语音提醒功能？(Y/N)
@@ -276,7 +276,7 @@ Bilibili dynamic getter. User only need to provide UID / topic name to get the l
       话题名称: 
       ```
 
-    - Select whether or not turn on TTS for dynamics using letter `Y` or `N`(`Y` stands for turn on, `N` stands for close): 
+    - Select whether turn on TTS for dynamics using letter `Y` or `N`(`Y` stands for turn on, `N` stands for close): 
 
       ```bash
       是否开启语音提醒功能？(Y/N)

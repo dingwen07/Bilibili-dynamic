@@ -4,14 +4,16 @@
 
 ### Field Summary
 
-| Type                        | Field and Description             |
-| --------------------------- | --------------------------------- |
-| `int`                       | [`uploader_uid`](#uploader_uid)   |
-| `str`                       | [`dynamic_url`](#dynamic_url)     |
-| `str`                       | [`uploader_name`](#uploader_name) |
-| `requests.sessions.Session` | [`session`](#session)             |
-| `sqlite3.Connection`        | [`db`](#db)                       |
-| `sqlite3.Cursor`            | [`db_cursor`](#db_cursor)         |
+| Type                        | Field and Description               |
+| --------------------------- | ----------------------------------- |
+| `int`                       | [`uploader_uid`](#uploader_uid)     |
+| `bool`                      | [`cache_resource`](#cache_resource) |
+| `str`                       | [`resource_path`](#resource_path)   |
+| `str`                       | [`dynamic_url`](#dynamic_url)       |
+| `str`                       | [`uploader_name`](#uploader_name)   |
+| `requests.sessions.Session` | [`session`](#session)               |
+| `sqlite3.Connection`        | [`db`](#db)                         |
+| `sqlite3.Cursor`            | [`db_cursor`](#db_cursor)           |
 
 ### Method Summary
 
@@ -34,6 +36,21 @@
 - Populated by the constructor
 - Should not be modified inside the class
 - Should not be modified outside the class
+
+#### `cache_resource`
+
+`cache_resource`: `bool`
+
+- Switch for caching resources
+- Populated by the constructor, with default value `True`
+
+#### `resource_path`
+
+`resource_path`: `str`
+
+- Path to store resource cache
+- Populated by the constructor, with default value `'./resource_cache'`
+- Path to store resource cache
 
 #### `dynamic_url`
 

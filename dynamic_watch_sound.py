@@ -9,10 +9,11 @@ upwh = updynamic.UploaderDynamic(uid)
 
 with open('dynamic_types.json', 'r') as load_file:
     dynamic_types = json.load(load_file)
+# noinspection PyBroadException
 try:
     with open('diagnosis.json', 'r') as load_file:
         diagnosis = json.load(load_file)
-except:
+except Exception:
     diagnosis = {'diagnosis': []}
     with open('diagnosis.json', 'w') as dump_file:
         json.dump(diagnosis, dump_file)
