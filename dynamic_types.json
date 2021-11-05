@@ -67,6 +67,53 @@
                 "vest",
                 "content"
             ]
+        },
+        "DYNAMIC_TYPE_WORD": {
+            "name": "\u6587\u5b57\u52a8\u6001",
+            "contains_title": false,
+            "path": [
+                "modules",
+                "module_dynamic",
+                "desc",
+                "text"
+            ]
+        },
+        "DYNAMIC_TYPE_DRAW": {
+            "name": "\u56fe\u7247\u52a8\u6001",
+            "contains_title": false,
+            "path": [
+                "modules",
+                "module_dynamic",
+                "desc",
+                "text"
+            ]
+        },
+        "DYNAMIC_TYPE_AV": {
+            "name": "\u89c6\u9891",
+            "contains_title": true,
+            "path": [
+                "modules",
+                "module_dynamic",
+                "desc",
+                "text"
+            ],
+            "title_path": [
+                "modules",
+                "module_dynamic",
+                "major",
+                "archive",
+                "title"
+            ]
+        },
+        "DYNAMIC_TYPE_FORWARD": {
+            "name": "\u8f6c\u53d1",
+            "contains_title": false,
+            "path": [
+                "modules",
+                "module_dynamic",
+                "desc",
+                "text"
+            ]
         }
     }
 }
