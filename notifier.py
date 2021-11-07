@@ -27,7 +27,7 @@ class Notifier(object):
                 print()
             if 'dynamic_id' in data:
                 print('动态ID: {}'.format(data['dynamic_id']))
-                print('动态链接: \n\thttps://t.bilibili.com/{}'.format(data['dynamic_id']))
+                print('动态链接: \n\thttps://t.bilibili.com/{}'.format(str(data['dynamic_id'])))
             if 'content' in data:
                 print('动态内容: {}'.format(data['content']))
         elif update_type == 1:
