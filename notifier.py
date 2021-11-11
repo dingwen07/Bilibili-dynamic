@@ -19,6 +19,8 @@ class Notifier(object):
                     self.notify_toast(data)
             elif n == 'tts_macOS':
                 self.notify_tts_macos(data)
+            elif n == 'sound':
+                self.notify_sound(data)
 
     @staticmethod
     def notify_stdout(data={'type': 0}):
@@ -225,3 +227,12 @@ class Notifier(object):
                 raise ValueError('Unknown update type')
         else:
             print('OS {} is not currently supported for tts notification'.format(system_type))
+
+
+    @staticmethod
+    def notify_sound(data={}):
+        import playsound
+        sound_file = 'alert.mp3'
+        if 'sound_file' in data:
+            sound_file = data['sound_file']
+        playsound.playsound(sound_file)\

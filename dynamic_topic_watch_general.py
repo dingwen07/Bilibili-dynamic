@@ -122,6 +122,12 @@ if platform.system() == 'Windows' or platform.system() == 'Darwin':
                 break
             else:
                 print('输入错误，请重新输入！')
+
+r = input('是否启用提示音?').lower().strip()
+if r == 'y' or r == 'yes':
+    notification_method.append('sound')
+# TODO: custom alert sound
+
 notification = Notifier(notification_method)
 
 print()
