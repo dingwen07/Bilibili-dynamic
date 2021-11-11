@@ -42,7 +42,7 @@ class DynamicParser:
             return output
 
     @staticmethod
-    def dictionary_parser(dynamic):
+    def dictionary_parser(dynamic, legacy_mode=True) -> dict:
         filename = 'dynamic_types.json'
         if not os.path.exists(filename):
             filename = 'Bilibili-dynamic/dynamic_types.json'
@@ -56,32 +56,68 @@ class DynamicParser:
             diagnosis = {'diagnosis': []}
             with open('diagnosis.json', 'w') as dump_file:
                 json.dump(diagnosis, dump_file)
-
-        dynamic_id = dynamic['desc']['dynamic_id']
-        dynamic_type = str(dynamic['desc']['type'])
-        dynamic_uploader_uid = str(dynamic['desc']['user_profile']['info']['uid'])
-        dynamic_uploader_name = str(dynamic['desc']['user_profile']['info']['uname'])
-        title = ""
-        if dynamic_type in dynamic_types['types']:
-            type_data = dynamic_types['types'][dynamic_type]
-            type_name = type_data['name']
-            type_contains_title = type_data['contains_title']
-            type_content_path = type_data['path']
-            content = dynamic.copy()
-            for k in type_content_path:
-                content = content[k]
-            if type_contains_title:
-                type_title_path = type_data['title_path']
-                title = dynamic.copy()
-                for k in type_title_path:
-                    title = title[k]
-            return {'code': 0, 'msg': '', 'data': {'dynamic_id': dynamic_id, 'type_name': type_name,
-                                                   'dynamic_uploader_uid': dynamic_uploader_uid,
-                                                   'dynamic_uploader_name': dynamic_uploader_name,
-                                                   'content': content, 'type_contains_title': type_contains_title,
-                                                   'title': title}}
+        if legacy_mode:
+            dynamic_id = dynamic['desc']['dynamic_id']
+            dynamic_type = str(dynamic['desc']['type'])
+            dynamic_uploader_uid = str(dynamic['desc']['user_profile']['info']['uid'])
+            dynamic_uploader_name = str(dynamic['desc']['user_profile']['info']['uname'])
+            title = ""
+            if dynamic_type in dynamic_types['types']:
+                type_data = dynamic_types['types'][dynamic_type]
+                type_name = type_data['name']
+                type_contains_title = type_data['contains_title']
+                type_content_path = type_data['path']
+                content = dynamic.copy()
+                for k in type_content_path:
+                    content = content[k]
+                if type_contains_title:
+                    type_title_path = type_data['title_path']
+                    title = dynamic.copy()
+                    for k in type_title_path:
+                        title = title[k]
+                return {
+                    'dynamic_id': dynamic_id,
+                    'type_name': type_name,
+                    'uploader_uid': dynamic_uploader_uid,
+                    'uploader_name': dynamic_uploader_name,
+                    'content': content,
+                    'type_contains_title': type_contains_title,
+                    'title': title
+                }
+            else:
+                diagnosis['diagnosis'].append(dynamic)
+                with open('diagnosis.json', 'w') as dump_file:
+                    json.dump(diagnosis, dump_file)
+                return {'msg': '发现不能被识别的动态类型，请联系开发者'}
         else:
-            diagnosis['diagnosis'].append(dynamic)
-            with open('diagnosis.json', 'w') as dump_file:
-                json.dump(diagnosis, dump_file)
-            return {'code': -1, 'msg': '发现不能被识别的动态类型，请联系开发者', 'data': {}}
+            dynamic_card_item = dynamic['dynamic_card_item']
+            dynamic_id = int(dynamic_card_item['id_str'])
+            dynamic_type = str(dynamic_card_item['type'])
+            dynamic_uploader_uid = dynamic_card_item['modules']['module_author']['mid']
+            dynamic_uploader_name = dynamic_card_item['modules']['module_author']['name']
+            title = ""
+            if dynamic_type in dynamic_types['types']:
+                type_data = dynamic_types['types'][dynamic_type]
+                type_name = type_data['name']
+                type_contains_title = type_data['contains_title']
+                type_content_path = type_data['path']
+                content = dynamic_card_item.copy()
+                for k in type_content_path:
+                    content = content[k]
+                if type_contains_title:
+                    type_title_path = type_data['title_path']
+                    title = dynamic_card_item.copy()
+                    for k in type_title_path:
+                        title = title[k]
+                return {
+                    'dynamic_id': dynamic_id,
+                    'type_name': type_name,
+                    'uploader_uid': dynamic_uploader_uid,
+                    'uploader_name': dynamic_uploader_name,
+                    'content': content,
+                    'type_contains_title': type_contains_title,
+                    'title': title
+                }
+            else:
+                return {'msg': '发现不能被识别的动态类型，请联系开发者'}
+
