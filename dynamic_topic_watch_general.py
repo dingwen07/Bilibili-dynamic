@@ -99,14 +99,15 @@ while True:
             add_another == 'NO':
         break
 
+notification_method = ['stdout']
+
 if platform.system() == 'Windows' or platform.system() == 'Darwin':
     while True:
         toast_mode = input('是否启用toast提醒(y/n): ')
         if toast_mode.upper() == 'Y' or toast_mode.upper() == 'YES':
-            use_toast = True
+            notification_method.append('toast')
             break
         elif toast_mode.upper() == 'N' or toast_mode.upper() == 'NO':
-            use_toast = False
             break
         else:
             print('输入错误，请重新输入！')
@@ -115,78 +116,34 @@ if platform.system() == 'Windows' or platform.system() == 'Darwin':
         while True:
             tts_mode = input('是否开启语音提醒功能？(y/n)')
             if tts_mode.upper() == 'Y' or tts_mode.upper() == 'YES':
-                use_tts = True
+                notification_method.append('tts_macOS')
                 break
             elif tts_mode.upper() == 'N' or tts_mode.upper() == 'NO':
-                use_tts = False
                 break
             else:
                 print('输入错误，请重新输入！')
-    else:
-        use_tts = False
-else:
-    use_toast = False
-    use_tts = False
+notification = Notifier(notification_method)
 
 print()
 
-Notifier.notify_stdout(
+notification.notify(
     {
         'start': True,
-        'type': 1
+        'type': 1,
+        'no_toast': True
     }
 )
-if use_tts:
-    Notifier.notify_tts_macos({'start': True, 'type': 1})
-    for item in topicwh_list:
-        Notifier.notify_stdout(
-            {
-                'monitor': True,
-                'topic_id': item.topic_id,
-                'topic_name': item.topic,
-                'type': 1,
-                'legacy_mode': item.legacy_mode
-            }
-        )
-        if use_toast:
-            Notifier.notify_toast(
-                {
-                    'monitor': True,
-                    'topic_id': item.topic_id,
-                    'topic_name': item.topic,
-                    'type': 1,
-                    'legacy_mode': item.legacy_mode
-                }
-            )
-        Notifier.notify_tts_macos(
-            {
-                'monitor': True,
-                'topic_id': item.topic_id,
-                'topic_name': item.topic,
-                'type': 1
-            }
-        )
-else:
-    for item in topicwh_list:
-        Notifier.notify_stdout(
-            {
-                'monitor': True,
-                'topic_id': item.topic_id,
-                'topic_name': item.topic,
-                'type': 1,
-                'legacy_mode': item.legacy_mode
-            }
-        )
-        if use_toast:
-            Notifier.notify_toast(
-                {
-                    'monitor': True,
-                    'topic_id': item.topic_id,
-                    'topic_name': item.topic,
-                    'type': 1,
-                    'legacy_mode': item.legacy_mode
-                }
-            )
+
+for item in topicwh_list:
+    notification.notify(
+        {
+            'monitor': True,
+            'topic_id': item.topic_id,
+            'topic_name': item.topic,
+            'type': 1,
+            'legacy_mode': item.legacy_mode
+        }
+    )
 print()
 
 while True:
@@ -199,11 +156,7 @@ while True:
                     dynamic_dict['topic_name'] = topicwh.topic
                     dynamic_dict['topic_id'] = topicwh.topic_id
                     dynamic_dict['type'] = 1
-                    Notifier.notify_stdout(dynamic_dict)
-                    if use_toast:
-                        Notifier.notify_toast(dynamic_dict)
-                    if use_tts:
-                        Notifier.notify_tts_macos(dynamic_dict)
+                    notification.notify(dynamic_dict)
         except Exception as e:
             print(e)
         finally:

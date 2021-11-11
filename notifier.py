@@ -15,7 +15,8 @@ class Notifier(object):
             if n == 'stdout':
                 self.notify_stdout(data)
             elif n == 'toast':
-                self.notify_toast(data)
+                if 'no_toast' not in data:
+                    self.notify_toast(data)
             elif n == 'tts_macOS':
                 self.notify_tts_macos(data)
 
