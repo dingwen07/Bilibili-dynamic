@@ -94,8 +94,9 @@
             "path": [
                 "modules",
                 "module_dynamic",
-                "desc",
-                "text"
+                "major",
+                "archive",
+                "desc"
             ],
             "title_path": [
                 "modules",
