@@ -14,6 +14,7 @@ class TopicDynamic(object):
     def __init__(self, topic_id=0, topic_name='', database_file='topic_dynamic_data.db', legacy_mode=True):
         super().__init__()
         self.legacy_mode = legacy_mode
+        self.topic_id = topic_id
         if self.legacy_mode:
             self.topic = topic_name
             self.topic_url_parsed = parse.quote(topic_name)
@@ -21,7 +22,6 @@ class TopicDynamic(object):
                                      '&offset_dynamic_id={}'.format(self.topic_url_parsed, '{}')
         else:
             self.topic = topic_name
-            self.topic_id = topic_id
             self.topic_dynamic_url = 'https://app.bilibili.com/x/topic/web/details/cards?topic_id={}' \
                                      '&offset_dynamic_id={}'.format(self.topic_id, '{}')
         self.session = requests.Session()
@@ -89,10 +89,16 @@ class TopicDynamic(object):
                     dynamic_type = str(dynamic['desc']['type'])
                     if dynamic_type in dynamic_types['types']:
                         type_data = dynamic_types['types'][dynamic_type]
-                        type_content_path = type_data['path']
+                        if type_data['contains_title']:
+                            type_content_path = type_data['title_path']
+                        else:
+                            type_content_path = type_data['path']
                         dynamic_description = dynamic.copy()
-                        for k in type_content_path:
-                            dynamic_description = dynamic_description[k]
+                        try:
+                            for k in type_content_path:
+                                dynamic_description = dynamic_description[k]
+                        except KeyError:
+                            dynamic_description = ''
                     self.db_cursor.execute(
                         '''INSERT INTO 
                         "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data")
@@ -115,10 +121,16 @@ class TopicDynamic(object):
                     dynamic_type = str(dynamic_card_item['type'])
                     if dynamic_type in dynamic_types['types']:
                         type_data = dynamic_types['types'][dynamic_type]
-                        type_content_path = type_data['path']
-                        dynamic_description = dynamic_card_item.copy()
-                        for k in type_content_path:
-                            dynamic_description = dynamic_description[k]
+                        if type_data['contains_title']:
+                            type_content_path = type_data['title_path']
+                        else:
+                            type_content_path = type_data['path']
+                        dynamic_description = dynamic['dynamic_card_item'].copy()
+                        try:
+                            for k in type_content_path:
+                                dynamic_description = dynamic_description[k]
+                        except KeyError:
+                            dynamic_description = ''
                     self.db_cursor.execute(
                         '''INSERT INTO 
                         "main"."dynamics" ("id", "uid", "topic_name", "time", "status", "description", "data")
