@@ -1,5 +1,6 @@
 import os
 import platform
+from typing import no_type_check
 from urllib import parse
 
 from constants import APP_ID, BILIBILI_ICON_URL
@@ -21,6 +22,24 @@ class Notifier(object):
                 self.notify_tts_macos(data)
             elif n == 'sound':
                 self.notify_sound(data)
+    
+    @staticmethod
+    def get_available_notify_methods_d():
+        all_notify_methods_d = {
+            'stdout': 'Print to Console',
+            'toast': 'Toast Notification',
+            'tts_macOS': 'Speak Notification',
+            'sound': 'Play Sound'
+        }
+        available_notify_methods = []
+        if platform.system() == 'Windows':
+            available_notify_methods = ['stdout', 'toast', 'sound']
+        elif platform.system() == 'Darwin':
+            available_notify_methods = ['stdout', 'toast', 'tts_macOS', 'sound']
+        else:
+            available_notify_methods = ['stdout', 'sound']
+        available_notify_methods_d = {key: all_notify_methods_d[key] for key in available_notify_methods}
+        return available_notify_methods_d
 
     @staticmethod
     def notify_stdout(data={'type': 0}):
@@ -101,9 +120,18 @@ class Notifier(object):
                     dynamic_id = ''
                 action_link = 'https://t.bilibili.com/{}'.format(str(dynamic_id))
                 if 'uploader_name' in data:
-                    title = title.format(data['uploader_name'])
+                    uploader_name = data['uploader_name']
+                    # title = title.format(data['uploader_name'], '{}')
+                else:
+                    uploader_name = ''
+                    # title = title.format('Null', '{}')
                 if 'type_name' in data:
-                    title = title.format(data['type_name'])
+                    type_name = data['type_name']
+                    # title = title.format(data['type_name'])
+                else:
+                    type_name = ''
+                    # title = title.format('Null')
+                title = title.format(uploader_name, type_name)
                 if 'content' in data:
                     message = data['content']
                 if 'type_contains_title' in data:
@@ -235,4 +263,4 @@ class Notifier(object):
         sound_file = 'alert.mp3'
         if 'sound_file' in data:
             sound_file = data['sound_file']
-        playsound.playsound(sound_file)\
+        playsound.playsound(sound_file)
